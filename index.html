@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="Camera Preconditioning (CamP) improves and accelerates camera optimization for NeRFs.">
+  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CamP: Camera Preconditioning for Neural Radiance Fields</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1WYQRMQV0T"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-1WYQRMQV0T');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="./static/js/video_comparison.js"></script>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏕️</text></svg>">
+</head>
+
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <a class="navbar-item" href="https://keunhong.com">
+          <span class="icon">
+            <i class="fas fa-home"></i>
+          </span>
+        </a>
+
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            More Research
+          </a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="https://hypernerf.github.io">
+              HyperNeRF
+            </a>
+            <a class="navbar-item" href="https://nerfies.github.io">
+              Nerfies
+            </a>
+            <a class="navbar-item" href="https://latentfusion.github.io">
+              LatentFusion
+            </a>
+            <a class="navbar-item" href="https://photoshape.github.io">
+              PhotoShape
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+
+            <h1 class="title is-1 publication-title">CamP: Camera Preconditioning<br />for Neural Radiance Fields</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://keunhong.com">Keunhong Park</a>,</span>
+              <span class="author-block">
+                <a href="https://henzler.github.io">Philipp Henzler</a>,</span>
+              <span class="author-block">
+                <a href="https://bmild.github.io">Ben Mildenhall</a>,</span>
+              <span class="author-block">
+                <a href="https://jonbarron.info">Jonathan T. Barron</a>,
+              </span>
+              <span class="author-block">
+                <a href="http://www.ricardomartinbrualla.com">Ricardo Martin-Brualla</a>
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Google Research</span>
+            </div>
+
+            <div class="is-size-5 publication-venue">
+              To be presented at SIGGRAPH Asia 2023
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- PDF Link. -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" title="Coming soon!" disabled>
+                    <span class="icon">
+                        <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                    </a>
+                </span>
+                <!-- Dataset Link. -->
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" title="Coming soon!" disabled>
+                    <span class="icon">
+                        <i class="far fa-images"></i>
+                    </span>
+                    <span>Data</span>
+                    </a>
+                  </span>
+    
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <!-- Zoom Container. -->
+        <div class="zoom-container" data-gt-img-src="./static/images/gardenchairs_gt.png" data-zoom-factor="1"
+          data-default-u="0.09" data-default-v="0.3" id="teaser-zoom-container">
+          <div class="columns is-mobile is-marginless">
+            <div class="column is-one-third">
+              <div class="zoom-gt-container">
+                <!-- <img class="zoom-gt-img" src="./static/images/gardenchairs_gt.png" alt="Ground Truth" /> -->
+                <canvas></canvas>
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/gardenchairs_no_optim_aligned.png)">
+              </div>
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/gardenchairs_no_optim_aligned_depth.png)"></div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/gardenchairs_no_precon_aligned.png)">
+              </div>
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/gardenchairs_no_precon_aligned_depth.png)"></div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/gardenchairs_with_precon_aligned.png)">
+              </div>
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/gardenchairs_with_precon_aligned_depth.png)">
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/gardenchairs_gt.png)">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="columns is-mobile has-text-centered is-marginless is-size-7-mobile">
+          <div class="column is-one-third">(a) Ground truth with annotation</div>
+          <div class="column is-one-sixth">(b) Zip-NeRF</div>
+          <div class="column is-one-sixth">(c) BARF-NGP</div>
+          <div class="column is-one-sixth">(d) Ours</div>
+          <div class="column is-one-sixth">(e) Ground truth</div>
+        </div>
+        <div class="content has-text-centered is-size-7-mobile">
+          Interactive visualization. Hover or tap to move the zoom cursor.
+        </div>
+        <!-- / Zoom Container. -->
+        <div class="content has-text-justified">
+          <p>
+            CamP <a href="https://en.wikipedia.org/wiki/Preconditioner">preconditions</a> camera optimization in
+            camera-optimizing Neural Radiance Fields, significantly improving
+            their ability to jointly recover the scene and camera parameters.
+          </p>
+          <p>
+            Here we show a NeRF reconstructed from a cellphone capture -- using camera poses estimated using ARKit.
+            We apply our method to <a href="https://jonbarron.info/zipnerf/">Zip-NeRF</a> (d), a state-of-the-art NeRF
+            approach that relies entirely oncamera poses
+            obtained from <a href="https://colmap.github.io/">COLMAP</a>.
+            Adding joint camera optimization to Zip-NeRF (b) using an improved version of the camera parameterization of
+            <a href="https://chenhsuanlin.bitbucket.io/bundle-adjusting-NeRF/">BARF</a>, adapted to the <a
+              href="https://nvlabs.github.io/instant-ngp/">Instant NGP</a> setting, improves
+            image quality, but many artifacts still remain.
+            (d) Our proposed preconditioned camera optimization technique improves camera estimates which results in a
+            higher fidelity scene reconstruction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <h2 class="title is-3">Abstract</h2>
+      <div class="content has-text-justified">
+        <p>
+          Neural Radiance Fields (NeRF) can be optimized to obtain high-fidelity 3D scene reconstructions of objects
+          and large-scale scenes.
+          However, NeRFs require accurate camera parameters as input --- inaccurate camera parameters result in
+          blurry renderings.
+          Extrinsic and intrinsic camera parameters are usually estimated using Structure-from-Motion (SfM) methods
+          as a pre-processing step to NeRF, but these techniques rarely yield perfect estimates.
+          Thus, prior works have proposed jointly optimizing camera parameters alongside a NeRF, but these methods
+          are prone to local minima in challenging settings.
+        </p>
+        <p>
+          In this work, we analyze how different camera parameterizations affect this joint optimization problem,
+          and observe that standard parameterizations exhibit large differences in magnitude with respect to small
+          perturbations, which can lead to an ill-conditioned optimization problem.
+          We propose using a proxy problem to compute a whitening transform that eliminates the correlation between
+          camera parameters and normalizes their effects, and we propose to use this transform as a
+          <i>preconditioner</i> for the camera parameters during joint optimization.
+        </p>
+        <p>
+          Our preconditioned camera optimization significantly improves reconstruction quality on scenes from the
+          <a href="https://jonbarron.info/mipnerf360/">Mip-NeRF 360</a> dataset: we reduce error rates (RMSE) by 67%
+          compared to state-of-the-art NeRF approaches
+          that do not optimize for cameras like Zip-NeRF, and by 29% relative to state-of-the-art joint optimization
+          approaches using the camera parameterization of <a href="https://postech-cvlab.github.io/SCNeRF/">SCNeRF</a>.
+          Our approach is easy to implement, does not significantly increase runtime, can be applied to a wide
+          variety of camera parameterizations, and can straightforwardly be incorporated into other NeRF-like
+          models.
+        </p>
+      </div>
+      <!--/ Abstract. -->
+
+      <!-- Paper video. -->
+      <!-- <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div> -->
+      <!--/ Paper video. -->
+    </div>
+  </section>
+
+  <hr />
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Camera Preconditioning</h2>
+
+      <div class="content has-text-justified">
+        <p>
+          We demonstrate the impact of our method on the SE3+Focal camera parameterization.
+          We apply a small perturbation to each parameter and visualize how preconditioning unifies the scale of the
+          parameters (right) whereas
+          the original parameterization exhibits large differences (left).
+        </p>
+      </div>
+      <h5 class="title is-5">Rotation</h5>
+      <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+        <source src="./static/videos/jiggle_rotation.mp4" type="video/mp4">
+      </video>
+      <h5 class="title is-5">Translation</h5>
+      <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+        <source src="./static/videos/jiggle_translation.mp4" type="video/mp4">
+      </video>
+      <h5 class="title is-5">Focal length</h4>
+        <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+          <source src="./static/videos/jiggle_focal.mp4" type="video/mp4">
+        </video>
+        <div class="columns is-mobile has-text-centered is-size-7-mobile">
+          <div class="column is-one-half">(a) SE3+Focal </div>
+          <div class="column is-one-half">(b) SE3+Focal+CamP (Ours)</div>
+        </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+
+      <h2 class="title is-3">Mobile Phone Captures</h2>
+
+      <div class="content has-text-justified">
+        <p>
+          Modern cellphones are able to estimate pose information using visual-inertial odometry,
+          which is often used for Augmented Reality (AR) applications. While the poses are sufficiently good for
+          AR effects,
+          it can be challenging to recover high quality NeRFs from those sequences without resorting to running
+          expensive, offline SfM pipelines.
+        </p>
+        <p>
+          Here we show reconstructions computed from casually captured scenes using the open source
+          <a href="https://github.com/jc211/NeRFCapture">NeRF Capture app</a> on an iPhone 13 Pro, which exports
+          camera poses estimated by ARKit.
+          We show qualitative comparisons that highlight the benefits of camera optimization.
+        </p>
+      </div>
+
+      <div class="content">
+        <div class="tabs-widget">
+          <div class="tabs is-centered">
+            <ul class="is-marginless">
+              <li class="is-active"><a>gardenchairs</a></li>
+              <li><a>catgrass</a></li>
+              <li><a>jade</a></li>
+              <li><a>butcherblock</a></li>
+            </ul>
+          </div>
+          <div class="tabs-content">
+            <div>
+              <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                <source src="./static/videos/gardenchairs_stacked.mp4" type="video/mp4">
+              </video>
+              <div class="columns is-mobile has-text-centered is-size-7-mobile">
+                <div class="column is-one-half">(a) ARKit Poses (w/o COLMAP) </div>
+                <div class="column is-one-half">(b) ARKit Poses + CamP (Ours)</div>
+              </div>
+            </div>
+
+            <div>
+              <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                <source src="./static/videos/catgrass_stacked.mp4" type="video/mp4">
+              </video>
+              <div class="columns is-mobile has-text-centered is-size-7-mobile">
+                <div class="column is-one-half">(a) ARKit Poses (w/o COLMAP) </div>
+                <div class="column is-one-half">(b) ARKit Poses + CamP (Ours)</div>
+              </div>
+            </div>
+
+            <div>
+              <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                <source src="./static/videos/jade_stacked.mp4" type="video/mp4">
+              </video>
+              <div class="columns is-mobile has-text-centered is-size-7-mobile">
+                <div class="column is-one-half">(a) ARKit Poses (w/o COLMAP) </div>
+                <div class="column is-one-half">(b) ARKit Poses + CamP (Ours)</div>
+              </div>
+            </div>
+
+            <div>
+              <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                <source src="./static/videos/butcherblock_stacked.mp4" type="video/mp4">
+              </video>
+              <div class="columns is-mobile has-text-centered is-size-7-mobile">
+                <div class="column is-one-half">(a) ARKit Poses (w/o COLMAP) </div>
+                <div class="column is-one-half">(b) ARKit Poses + CamP (Ours)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="title is-3">Mip-NeRF 360 Dataset</h2>
+
+        <!-- Zoom Container. -->
+        <div class="zoom-container" data-gt-img-src="./static/images/treehill_gt.png" data-zoom-factor="2"
+          data-default-u="0.73" data-default-v="0.29" id="teaser-zoom-container">
+          <div class="columns is-mobile is-marginless">
+            <div class="column is-one-third">
+              <div class="zoom-gt-container">
+                <img class="zoom-gt-img" src="./static/images/treehill_gt.png" alt="Ground Truth" />
+                <canvas></canvas>
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/treehill_no_optim_aligned.png)">
+              </div>
+              <div class="zoom-lens" style="background-image: url(./static/images/treehill_no_optim_aligned_depth.png)">
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/treehill_no_precon_aligned.png)">
+              </div>
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/treehill_no_precon_aligned_depth.png)">
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/treehill_with_precon_aligned.png)">
+              </div>
+              <div class="zoom-lens"
+                style="background-image: url(./static/images/treehill_with_precon_aligned_depth.png)">
+              </div>
+            </div>
+            <div class="column is-one-sixth">
+              <div class="zoom-lens" style="background-image: url(./static/images/treehill_gt.png)">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="columns is-mobile has-text-centered is-marginless is-size-7-mobile">
+          <div class="column is-one-third">(a) Ground truth with annotation</div>
+          <div class="column is-one-sixth">(b) Zip-NeRF</div>
+          <div class="column is-one-sixth">(c) +SCNeRF</div>
+          <div class="column is-one-sixth">(d) +CamP (ours)</div>
+          <div class="column is-one-sixth">(e) Ground truth</div>
+        </div>
+        <div class="content has-text-centered is-size-7-mobile">
+          Interactive visualization. Hover or tap to move the zoom cursor.
+        </div>
+        <!-- / Zoom Container. -->
+        <div class="content has-text-justified">
+          <p>
+            Static NeRF methods such as Zip-NeRF (b) rely on poses from a preprocessing step such as COLMAP to
+            produce good results. Even these poses may be imperfect, leading to blurring and artifacts.
+            The treehill scene in the Mip-NeRF 360 dataset is an example of a scene with noisy camera estimates.
+            Adding a state-of-the-art
+            camera optimization method such as SCNeRF (c) ameliorates this slightly but artifacts in distance parts of
+            the
+            scene still
+            remain. Our method is able to enhance SCNeRF by preconditioning its parameterization thereby achieving
+            significantly sharper results.
+          </p>
+        </div>
+
+        <div class="content">
+          <h2 class="title is-4">Side-by-Side Comparisons on Perturbed Mip-NeRF 360 Dataset</h2>
+          <p>
+            Next we show a side-by-side comparison between SCNeRF with and without preconditioning on the perturbed
+            Mip-NeRF 360 dataset. Preconditioning allows the optimization converge to better estimates for the camera
+            poses resulting in sharper details and less artifacts.
+          </p>
+
+          <div class="tabs-widget">
+            <div class="tabs is-centered">
+              <ul class="is-marginless">
+                <li class="is-active"><a>bicycle</a></li>
+                <li><a>flowerbed</a></li>
+                <li><a>gardenvase</a></li>
+                <li><a>treehill</a></li>
+                <li><a>fullkitchen</a></li>
+              </ul>
+            </div>
+            <div class="content has-text-centered is-size-7-mobile">
+              Interactive visualization. Hover or tap to move the split.
+            </div>
+            <div class="tabs-content">
+              <!-- Begin bicycle. -->
+              <div>
+                <div class="tabs-widget">
+                  <div class="tabs is-centered is-toggle is-toggle-rounded is-small">
+                    <ul class="is-marginless">
+                      <li class="is-active"><a>RGB</a></li>
+                      <li><a>Depth</a></li>
+                    </ul>
+                  </div>
+                  <div class="tabs-content">
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/bicycle_comparison_stacked_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/bicycle_comparison_stacked_depth_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End bicycle. -->
+              <!-- Begin flowerbed. -->
+              <div>
+                <div class="tabs-widget">
+                  <div class="tabs is-centered is-toggle is-toggle-rounded is-small">
+                    <ul class="is-marginless">
+                      <li class="is-active"><a>RGB</a></li>
+                      <li><a>Depth</a></li>
+                    </ul>
+                  </div>
+                  <div class="tabs-content">
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/flowerbed_comparison_stacked_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/flowerbed_comparison_stacked_depth_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End flowerbed. -->
+              <!-- Begin gardenvase. -->
+              <div>
+                <div class="tabs-widget">
+                  <div class="tabs is-centered is-toggle is-toggle-rounded is-small">
+                    <ul class="is-marginless">
+                      <li class="is-active"><a>RGB</a></li>
+                      <li><a>Depth</a></li>
+                    </ul>
+                  </div>
+                  <div class="tabs-content">
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/gardenvase_comparison_stacked_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/gardenvase_comparison_stacked_depth_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End gardenvase. -->
+              <!-- Begin treehill. -->
+              <div>
+                <div class="tabs-widget">
+                  <div class="tabs is-centered is-toggle is-toggle-rounded is-small">
+                    <ul class="is-marginless">
+                      <li class="is-active"><a>RGB</a></li>
+                      <li><a>Depth</a></li>
+                    </ul>
+                  </div>
+                  <div class="tabs-content">
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/treehill_comparison_stacked_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/treehill_comparison_stacked_depth_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End treehill. -->
+              <!-- Begin fullkitchen. -->
+              <div>
+                <div class="tabs-widget">
+                  <div class="tabs is-centered is-toggle is-toggle-rounded is-small">
+                    <ul class="is-marginless">
+                      <li class="is-active"><a>RGB</a></li>
+                      <li><a>Depth</a></li>
+                    </ul>
+                  </div>
+                  <div class="tabs-content">
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/fullkitchen_comparison_stacked_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                    <div class="video-comparison">
+                      <video class="video" width=100% loop playsinline autoplay muted
+                        src="./static/videos/fullkitchen_comparison_stacked_depth_v2.mp4"></video>
+                      <canvas></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End fullkitchen. -->
+            </div>
+          </div>
+        </div>
+
+        <div class="container is-max-desktop">
+          <h2 class="title is-3">NeRF-Synthetic Dataset</h2>
+          <div class="content has-text-justified">
+            <p>
+              CamP can converge quickly even when the intrinsics of a scene are unknown. We evaluate on a more
+              challenging
+              version of the perturbed NeRF-Synthetic benchmark proposed in BARF where we also perturb the focal length
+              and
+              perspective of the cameras.
+            </p>
+            <p>
+              We compare our method to an improved version of BARF that has
+              been adapted to the Instant NGP setting (BARF-NGP) for faster convergence. BARF is unable to converge to
+              the
+              correct
+              camera positions leading to visual artifacts and floaters in the reconstruction.
+            </p>
+          </div>
+          <h3 class="title is-4">Convergence</h2>
+            <div class="content has-text-centered">
+              <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                <source src="./static/videos/lego_stacked_camera.mp4" type="video/mp4">
+              </video>
+              <div class="columns is-mobile has-text-centered">
+                <div class="column is-one-half">(a) BARF-NGP</div>
+                <div class="column is-one-half">(b) Ours</div>
+              </div>
+
+              <div class="content has-text-justified">
+                <p>
+                  When the focal lengths of the cameras are unknown, the BARF formulation fails to find the correct
+                  camera poses due to perspective ambiguities. Our preconditioned camera optimization is able to
+                  quickly converge to the correct solution.
+                </p>
+                <p>
+                  Even in the presence of perspective ambiguities the reconstruction may look correct at first glance.
+                  However, compared to the reconstruction with the correct cameras there are significantly more
+                  artifacts
+                  around the boundaries. Floaters caused by inaccurate boundaries can be clearly seen in the depth.
+                </p>
+              </div>
+
+              <div class="tabs-widget">
+                <div class="tabs is-centered is-toggle is-toggle-rounded">
+                  <ul class="is-marginless">
+                    <li class="is-active"><a>RGB</a></li>
+                    <li><a>Depth</a></li>
+                  </ul>
+                </div>
+                <div class="tabs-content">
+                  <div>
+                    <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                      <source src="./static/videos/lego_stacked_rgb_annotated.mp4" type="video/mp4">
+                    </video>
+                    <div class="columns is-mobile has-text-centered">
+                      <div class="column is-one-half">(a) BARF-NGP</div>
+                      <div class="column is-one-half">(b) Ours</div>
+                    </div>
+                  </div>
+                  <div>
+                    <video id="replay-video" controls muted preload playsinline autoplay loop width="100%">
+                      <source src="./static/videos/lego_stacked_depth.mp4" type="video/mp4">
+                    </video>
+                    <div class="columns is-mobile has-text-centered">
+                      <div class="column is-one-half">(a) BARF-NGP</div>
+                      <div class="column is-one-half">(b) Ours</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- Concurrent Work. -->
+      <!-- <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Related Links</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            There's a lot of excellent work that was introduced around the same time as ours.
+          </p>
+          <p>
+            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
+          </p>
+          <p>
+            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
+            both use deformation fields to model non-rigid scenes.
+          </p>
+          <p>
+            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
+          </p>
+          <p>
+            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
+          </p>
+        </div>
+      </div>
+    </div> -->
+      <!--/ Concurrent Work. -->
+
+    </div>
+  </section>
+
+  <hr />
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Acknowledgements</h2>
+      <p>
+        Thanks to <a href="http://szeliski.org/">Rick Szeliski</a> and <a
+          href="https://homes.cs.washington.edu/~sagarwal/">Sameer Agarwal</a>
+        for their comments on the text; and <a href="https://cs.stanford.edu/~poole/">Ben Poole</a>, <a
+          href="https://holynski.org/">Aleksander Holynski</a>,
+        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>, <a href="https://www.battal.me/">Ben
+          Attal</a>,
+        <a href="https://phogzone.com/">Peter Hedman</a>, <a href="https://matthewpburruss.com/">Matthew Burruss</a>,
+        Laurie Zhang, Matthew Levine, and <a href="https://people.csail.mit.edu/fcole/">Forrester Cole</a> for their
+        advice and help.
+        Thanks to <a href="https://dorverbin.github.io/">Dor Verbin</a> for providing code for the video comparison
+        tool and helping with the preparation of the NeRF-synthetic dataset.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@article{park2023camp,
+  author    = {Park, Keunhong; Henzler, Philipp; Mildenhall, Ben; Barron, Jonathan T.; Martin-Brualla, Ricardo},
+  title     = {CamP: Camera Preconditioning for Neural Radiance Fields},
+  journal = {ACM Trans. Graph.},
+  publisher = {ACM},
+  year      = {2023},
+  issue_date = {December 2023},
+}</code></pre>
+    </div>
+  </section>
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <a class="icon-link" href="./static/videos/nerfies_paper.pdf">
+          <i class="fas fa-file-pdf"></i>
+        </a>
+        <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+            <p>
+              This means you are free to borrow the <a href="https://github.com/nerfies/nerfies.github.io">source
+                code</a> of this website,
+              we just ask that you link back to this page in the footer.
+              Please remember to remove the analytics code included in the header of the website which
+              you do not want on your website.
+            </p>
+            <p>The video comparison tool is from the <a
+                href="https://dorverbin.github.io/refnerf/index.html">Ref-NeRF</a> project by Dor Verbin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
