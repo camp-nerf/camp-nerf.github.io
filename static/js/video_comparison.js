@@ -156,5 +156,6 @@ $(document).ready(function () {
         const containerElement = $(this);
         let videoElement = containerElement.find('video');
         videoElement.on('play', function () { resizeAndPlay(containerElement); });
+        resizeAndPlay(containerElement);
     });
 })
