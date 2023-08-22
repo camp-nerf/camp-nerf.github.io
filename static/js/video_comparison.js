@@ -17,6 +17,8 @@ class VideoComparison {
         this.video = container.find('video');
         this.context = this.canvas[0].getContext("2d");
 
+        this.isPlaying = false;
+
         this.video[0].style.height = "0px";  // Hide video without stopping it
         this.video[0].playbackRate = 0.5;
 
@@ -25,7 +27,8 @@ class VideoComparison {
             self.playWhenReady();
         });
         container.on('tab:hide', function(e) {
-            self.video[0].pause();
+            // self.video[0].pause();
+            self.pause();
         });
 
         function trackLocation(e) {
@@ -47,7 +50,6 @@ class VideoComparison {
         $(window).on('resize', function (e) {
             self.resize();
         });
-
     }
 
     resize() {
@@ -60,20 +62,31 @@ class VideoComparison {
     }
 
     play() {
-        console.log('Playing video', this.video[0])
         this.resize();
+        if (this.isPlaying) {
+            return;
+        }
+        console.log('Playing video', this.video[0])
+        this.isPlaying = true;
         this.video[0].play();
         this.drawLoop();
     }
 
+    pause() {
+        this.video[0].pause();
+        this.isPlaying = false;
+    }
+
     playWhenReady() {
+        console.log('play when ready', this.video[0])
         const self = this;
         if (self.video[0].readyState >= 3) {
             self.play();
-        } else {
+        } else if (!self.readyStateListenerAttached) {
             document.addEventListener('readystatechange', function () {
-                console.log('readystate', self.video[0].readyState)
-                self.play();
+                if (self.video[0].readyState >= 3) {
+                    self.play();
+                }
             });
         }
     }
@@ -86,10 +99,6 @@ class VideoComparison {
         requestAnimationFrame(drawFrame);
 
         function drawFrame() {
-            if (video.paused) {
-                console.log('Video paused:', video);
-                return;
-            }
             const videoWidth = video.videoWidth / 2;
             const videoHeight = video.videoHeight;
             const canvasWidth = container.width();
@@ -107,7 +116,6 @@ class VideoComparison {
                 sourceColWidth, videoHeight,
                 colStart, 0,
                 colWidth, canvasHeight);
-            requestAnimationFrame(drawFrame);
 
             var arrowLength = 0.09 * canvasHeight;
             var arrowheadWidth = 0.025 * canvasHeight;
@@ -172,6 +180,10 @@ class VideoComparison {
             context.textAlign = "right";
             context.strokeText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5)
             context.fillText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5);
+
+            if (self.isPlaying) {
+                requestAnimationFrame(drawFrame);
+            }
         }
     }
 }

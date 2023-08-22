@@ -1,5 +1,9 @@
 window.HELP_IMPROVE_VIDEOJS = false;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 $(document).ready(function () {
   // Check for click events on the navbar burger icon
   $(".navbar-burger").click(function () {
@@ -169,9 +173,11 @@ class TabsWidget {
     tabsContent.children().each(function () {
       if ($(this).index() == targetIndex) {
         $(this).show();
-        if ($(this).is(':visible')) {
-          $(this).find('*').trigger('tab:show');
-        }
+        $(this).find('*').each(function () {
+          if ($(this).is(':visible')) {
+            $(this).trigger('tab:show');
+          }
+        })
       } else {
         $(this).hide();
         $(this).find('*').trigger('tab:hide');
