@@ -12,7 +12,7 @@ function playVids(containerElement) {
     var context = canvasElement.getContext("2d");
 
     if (videoElement.readyState > 3) {
-        videoElement.play();
+        // videoElement.play();
 
         function trackLocation(e) {
             // Normalize to [0, 1]
@@ -32,6 +32,10 @@ function playVids(containerElement) {
 
 
         function drawLoop() {
+            if (videoElement.paused) {
+                return;
+            }
+            console.log(videoElement);
             const videoWidth = videoElement.videoWidth / 2;
             const videoHeight = videoElement.videoHeight;
             const canvasWidth = containerElement.width();
@@ -49,7 +53,6 @@ function playVids(containerElement) {
                 colStart, 0,
                 colWidth, canvasHeight);
             requestAnimationFrame(drawLoop);
-
 
             var arrowLength = 0.09 * canvasHeight;
             var arrowheadWidth = 0.025 * canvasHeight;
@@ -116,7 +119,6 @@ function playVids(containerElement) {
             context.textAlign = "right";
             context.strokeText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5)
             context.fillText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5);
-
         }
         requestAnimationFrame(drawLoop);
     }
