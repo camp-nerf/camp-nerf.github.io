@@ -35,7 +35,6 @@ function playVids(containerElement) {
             if (videoElement.paused) {
                 return;
             }
-            console.log(videoElement);
             const videoWidth = videoElement.videoWidth / 2;
             const videoHeight = videoElement.videoHeight;
             const canvasWidth = containerElement.width();
