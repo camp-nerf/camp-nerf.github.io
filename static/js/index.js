@@ -46,12 +46,15 @@ $(document).ready(function () {
     zoomWidget = new ZoomWidget(containerElement);
   });
 
+  $('.video-comparison').each(function () {
+      const containerElement = $(this);
+      comparisonWidget = new VideoComparison(containerElement);
+  });
+
   $('.tabs-widget').each(function() {
     const containerElement = $(this);
     tabsWidget = new TabsWidget(containerElement);
   });
-
-  playPauseVideo();
 });
 
 
@@ -164,8 +167,12 @@ class TabsWidget {
     tabsContent.children().each(function () {
       if ($(this).index() == targetIndex) {
         $(this).show();
+        if ($(this).is(':visible')) {
+          $(this).find('*').trigger('tab:show');
+        }
       } else {
         $(this).hide();
+        $(this).find('*').trigger('tab:hide');
       }
     });
   }
@@ -173,36 +180,4 @@ class TabsWidget {
 
 function clamp(number, min, max) {
   return Math.min(Math.max(number, min), max);
-}
-
-
-// From: https://benfrain.com/automatically-play-and-pause-video-as-it-enters-and-leaves-the-viewport-screen/
-function playPauseVideo() {
-  let videos = document.querySelectorAll("video");
-  videos.forEach((video) => {
-      // We can only control playback without insteraction if video is mute
-      video.muted = true;
-      // Play is a promise so we need to check we have it
-      let playPromise = video.play();
-      if (playPromise !== undefined) {
-          playPromise.then((_) => {
-              let observer = new IntersectionObserver(
-                  (entries) => {
-                      entries.forEach((entry) => {
-                          if (
-                              entry.intersectionRatio !== 1 &&
-                              !video.paused
-                          ) {
-                              video.pause();
-                          } else if (video.paused) {
-                              video.play();
-                          }
-                      });
-                  },
-                  { threshold: 0.5 }
-              );
-              observer.observe(video);
-          });
-      }
-  });
 }

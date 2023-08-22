@@ -4,54 +4,110 @@
 // Modified by Keunhong Park to be responsive to window size.
 
 
-function playVids(containerElement) {
-    let canvasElement = containerElement.find('canvas')[0]
-    let videoElement = containerElement.find('video')[0]
+Number.prototype.clamp = function (min, max) {
+    return Math.min(Math.max(this, min), max);
+};
 
-    var position = 0.5;
-    var context = canvasElement.getContext("2d");
 
-    if (videoElement.readyState > 3) {
-        // videoElement.play();
+class VideoComparison {
+    constructor(container) {
+        this.container = container;
+        this.position = 0.5;
+        this.canvas = container.find('canvas');
+        this.video = container.find('video');
+        this.context = this.canvas[0].getContext("2d");
+
+        this.video[0].style.height = "0px";  // Hide video without stopping it
+        this.video[0].playbackRate = 0.5;
+
+        let self = this;
+        container.on('tab:show', function (e) {
+            self.playWhenReady();
+        });
+        container.on('tab:hide', function(e) {
+            self.video[0].pause();
+        });
 
         function trackLocation(e) {
             // Normalize to [0, 1]
-            bcr = canvasElement.getBoundingClientRect();
-            position = ((e.pageX - bcr.x) / bcr.width);
+            self.bcr = self.canvas[0].getBoundingClientRect();
+            self.position = ((e.pageX - self.bcr.x) / self.bcr.width);
         }
         function trackLocationTouch(e) {
             // Normalize to [0, 1]
-            bcr = canvasElement.getBoundingClientRect();
-            position = ((e.touches[0].pageX - bcr.x) / bcr.width);
+            self.bcr = self.canvas[0].getBoundingClientRect();
+            self.position = ((e.touches[0].pageX - self.bcr.x) / self.bcr.width);
         }
 
-        canvasElement.addEventListener("mousemove", trackLocation, false);
-        canvasElement.addEventListener("touchstart", trackLocationTouch, false);
-        canvasElement.addEventListener("touchmove", trackLocationTouch, false);
-        canvasElement.addEventListener("mouseout", function () { position = 0.5; }, false);
+        this.canvas.on('mousemove', trackLocation);
+        this.canvas.on('touchstart', trackLocationTouch);
+        this.canvas.on('touchmove', trackLocationTouch);
+        this.canvas.on('mouseout', function () { self.position = 0.5; });
 
+        $(window).on('resize', function (e) {
+            self.resize();
+        });
 
-        function drawLoop() {
-            if (videoElement.paused) {
+    }
+
+    resize() {
+        const videoWidth = this.video[0].videoWidth / 2;
+        const videoHeight = this.video[0].videoHeight;
+        const canvasWidth = this.container.width();
+        const canvasHeight = canvasWidth * videoHeight / videoWidth;
+        this.canvas[0].width = canvasWidth;
+        this.canvas[0].height = canvasHeight;
+    }
+
+    play() {
+        console.log('Playing video', this.video[0])
+        this.resize();
+        this.video[0].play();
+        this.drawLoop();
+    }
+
+    playWhenReady() {
+        const self = this;
+        if (self.video[0].readyState >= 3) {
+            self.play();
+        } else {
+            document.addEventListener('readystatechange', function () {
+                console.log('readystate', self.video[0].readyState)
+                self.play();
+            });
+        }
+    }
+
+    drawLoop() {
+        const self = this;
+        const video = this.video[0];
+        const container = this.container;
+        const context = this.context;
+        requestAnimationFrame(drawFrame);
+
+        function drawFrame() {
+            if (video.paused) {
+                console.log('Video paused:', video);
                 return;
             }
-            const videoWidth = videoElement.videoWidth / 2;
-            const videoHeight = videoElement.videoHeight;
-            const canvasWidth = containerElement.width();
+            const videoWidth = video.videoWidth / 2;
+            const videoHeight = video.videoHeight;
+            const canvasWidth = container.width();
             const canvasHeight = canvasWidth * videoHeight / videoWidth;
+            const position = self.position;
 
-            context.drawImage(videoElement, 0, 0, videoWidth, videoHeight, 0, 0, canvasWidth, canvasHeight);
+            context.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, canvasWidth, canvasHeight);
             var colStart = (canvasWidth * position).clamp(0.0, canvasWidth);
             var colWidth = (canvasWidth - (canvasWidth * position)).clamp(0.0, canvasWidth);
             var sourceColStart = (videoWidth * position).clamp(0.0, videoWidth);
             var sourceColWidth = (videoWidth - (videoWidth * position)).clamp(0.0, videoWidth);
             context.drawImage(
-                videoElement,
+                video,
                 sourceColStart + videoWidth, 0,
                 sourceColWidth, videoHeight,
                 colStart, 0,
                 colWidth, canvasHeight);
-            requestAnimationFrame(drawLoop);
+            requestAnimationFrame(drawFrame);
 
             var arrowLength = 0.09 * canvasHeight;
             var arrowheadWidth = 0.025 * canvasHeight;
@@ -64,8 +120,6 @@ function playVids(containerElement) {
             context.arc(currX, arrowPosY, arrowLength * 0.7, 0, Math.PI * 2, false);
             context.fillStyle = "#FFD79340";
             context.fill()
-            //mergeContext.strokeStyle = "#444444";
-            //mergeContext.stroke()
 
             // Draw border
             context.beginPath();
@@ -119,43 +173,5 @@ function playVids(containerElement) {
             context.strokeText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5)
             context.fillText('SCNeRF+CamP', canvasWidth - 10, canvasHeight - 5);
         }
-        requestAnimationFrame(drawLoop);
     }
 }
-
-Number.prototype.clamp = function (min, max) {
-    return Math.min(Math.max(this, min), max);
-};
-
-
-function resizeAndPlay(containerElement) {
-    let canvasElement = containerElement.find('canvas')[0]
-    let videoElement = containerElement.find('video')[0]
-    const videoWidth = videoElement.videoWidth / 2;
-    const videoHeight = videoElement.videoHeight;
-    const canvasWidth = containerElement.width();
-    const canvasHeight = canvasWidth * videoHeight / videoWidth;
-    canvasElement.width = canvasWidth;
-    canvasElement.height = canvasHeight;
-    videoElement.play();
-    videoElement.style.height = "0px";  // Hide video without stopping it
-    videoElement.playbackRate = 0.5;
-
-    playVids(containerElement);
-
-    $(window).on('resize', function (e) {
-        const canvasWidth = containerElement.width();
-        const canvasHeight = canvasWidth * videoHeight / videoWidth;
-        canvasElement.width = canvasWidth;
-        canvasElement.height = canvasHeight;
-    });
-}
-
-$(document).ready(function () {
-    $('.video-comparison').each(function () {
-        const containerElement = $(this);
-        let videoElement = containerElement.find('video');
-        videoElement.on('play', function () { resizeAndPlay(containerElement); });
-        resizeAndPlay(containerElement);
-    });
-})
